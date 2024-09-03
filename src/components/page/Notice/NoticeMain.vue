@@ -52,6 +52,13 @@
             :onClick="searchList"
             v-model="cPage"
         />
+        <Pagination
+            :totalItems="noticeList?.listCount"
+            :itemsPerPage="5"
+            :maxPagesShown="5"
+            :onClick="searchList"
+            v-model="cPage"
+        />
     </div>
 </template>
 

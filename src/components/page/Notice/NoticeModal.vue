@@ -3,12 +3,17 @@
         <div class="backdrop">
             <div class="container">
                 <label> 제목 :<input type="text" v-model="noticeDetail.noti_title" /> </label>
+                <label> 제목 :<input type="text" v-model="noticeDetail.noti_title" /> </label>
                 <label>
                     내용 :
                     <input type="text" v-model="noticeDetail.noti_content" />
+                    <input type="text" v-model="noticeDetail.noti_content" />
                 </label>
                 파일 :<input type="file" style="display: none" id="fileInput" @change="handlerFile" />
+                파일 :<input type="file" style="display: none" id="fileInput" @change="handlerFile" />
                 <label class="img-label" htmlFor="fileInput"> 파일 첨부하기 </label>
+                <div @click="fileDownload">
+                    <div v-if="imageUrl">
                 <div @click="fileDownload">
                     <div v-if="imageUrl">
                         <label>미리보기</label>
@@ -17,9 +22,19 @@
                     <div v-else>
                         <label>파일명</label>
                         {{ fileData?.name || noticeDetail?.file_name }}
+                        <img :src="imageUrl" />
+                    </div>
+                    <div v-else>
+                        <label>파일명</label>
+                        {{ fileData?.name || noticeDetail?.file_name }}
                     </div>
                 </div>
                 <div class="button-box">
+                    <button @click="props.noticeSeq > 0 ? noticeUpdate() : noticeSave()">
+                        {{ props.noticeSeq > 0 ? "수정" : "저장" }}
+                    </button>
+                    <button v-if="props.noticeSeq > 0" @click="noticeDelete">삭제</button>
+                    <button @click="modalState.setModalState">나가기</button>
                     <button @click="props.noticeSeq > 0 ? noticeUpdate() : noticeSave()">
                         {{ props.noticeSeq > 0 ? "수정" : "저장" }}
                     </button>
