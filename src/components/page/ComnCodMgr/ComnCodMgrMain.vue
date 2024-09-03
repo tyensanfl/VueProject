@@ -1,5 +1,5 @@
 <template>
-    <button>신규등록</button>
+    <button @click="handlerInsertModal">신규등록</button>
     <table>
         <colgroup>
             <col width="20%" />
@@ -20,16 +20,80 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td colspan="6">데이터가 없습니다.</td>
+            <tr v-if="isLoading">
+                <td colspan="6">로딩 중...</td>
             </tr>
+            <template v-else-if="listComnGrp.listComnGrpCod.length <= 0">
+                <tr>
+                    <td colspan="6">데이터가 없습니다.</td>
+                </tr>
+            </template>
+            <template v-else>
+                <tr v-for="comnGrp in listComnGrp.listComnGrpCod" :key="comnGrp.grp_cod">
+                    <td>{{ comnGrp.grp_cod }}</td>
+                    <td>{{ comnGrp.grp_cod_nm }}</td>
+                    <td>{{ comnGrp.grp_cod_eplti }}</td>
+                    <td>{{ comnGrp.use_poa }}</td>
+                    <td>{{ comnGrp.fst_enlm_dtt }}</td>
+                    <td><a @click="(e) => handlerUpdateModal(e, comnGrp.grp_cod)">수정</a></td>
+                </tr>
+            </template>
         </tbody>
+        <ComnCodMgrModal v-if="modalState.modalState" :grpCodProp="grpCodProp" />
     </table>
-
-    현재 페이지: {{ 0 }} 총 개수: {{ 0 }}
+    <Pagination
+        :totalItems="listComnGrp?.totalCount || 0"
+        :itemsPerPage="5"
+        :maxPagesShown="5"
+        :onClick="refetch"
+        v-model="cPage"
+    ></Pagination>
+    현재 페이지: {{ cPage }} 총 개수: {{ listComnGrp?.totalCount }}
 </template>
 
-<script></script>
+<script setup>
+import { useQuery } from "@tanstack/vue-query";
+import axios from "axios";
+import ComnCodMgrModal from "./ComnCodMgrModal.vue";
+import { useModalStore } from "@/stores/modalState";
+import Pagination from "@/components/common/Pagination.vue";
+import useGetComnGrp from "@/hook/comnCodMgr/useGetComnGrp";
+
+const injectedValue = inject("providedValue");
+const cPage = ref(1);
+const pageSize = ref(5);
+const modalState = useModalStore();
+const grpCodProp = ref();
+
+const searchList = async () => {
+    const result = await axios.post("/api/system/listComnGrpCodJson.do", {
+        currentPage: cPage.value,
+        pageSize: pageSize.value,
+        ...injectedValue.value
+    });
+
+    return result.data;
+};
+const {
+    data: listComnGrp,
+    isLoading,
+    refetch
+} = useQuery({
+    queryKey: ["listComnGrp", injectedValue],
+    queryFn: searchList
+    // refetchInterval: 5 * 1000
+});
+
+const handlerInsertModal = () => {
+    grpCodProp.value = "create";
+    modalState.setModalState();
+};
+
+const handlerUpdateModal = (event, grpCod) => {
+    grpCodProp.value = grpCod;
+    modalState.setModalState();
+};
+</script>
 
 <style lang="scss" scoped>
 table {
